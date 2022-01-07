@@ -5,52 +5,51 @@ import {
 } from '@jupiterone/integration-sdk-core';
 
 export const Steps = {
+  CAMPAIGNS: 'fetch-campaigns',
   ACCOUNT: 'fetch-account',
+  DOMAINS: 'fetch-domains',
   USERS: 'fetch-users',
-  GROUPS: 'fetch-groups',
-  GROUP_USER_RELATIONSHIPS: 'build-user-group-relationships',
 };
 
 export const Entities: Record<
-  'ACCOUNT' | 'GROUP' | 'USER',
+  'CAMPAIGN' | 'ACCOUNT' | 'DOMAIN' | 'USER',
   StepEntityMetadata
 > = {
+  CAMPAIGN: {
+    resourceName: 'Campaign',
+    _type: 'mimecast_campaign',
+    _class: ['Training'],
+  },
   ACCOUNT: {
     resourceName: 'Account',
-    _type: 'acme_account',
+    _type: 'mimecast_account',
     _class: ['Account'],
   },
-  GROUP: {
-    resourceName: 'UserGroup',
-    _type: 'acme_group',
-    _class: ['UserGroup'],
+  DOMAIN: {
+    resourceName: 'Domain',
+    _type: 'mimecast_domain',
+    _class: ['Domain'],
   },
   USER: {
     resourceName: 'User',
-    _type: 'acme_user',
+    _type: 'mimecast_user',
     _class: ['User'],
   },
 };
 
 export const Relationships: Record<
-  'ACCOUNT_HAS_USER' | 'ACCOUNT_HAS_GROUP' | 'GROUP_HAS_USER',
+  'ACCOUNT_HAS_DOMAIN' | 'DOMAIN_HAS_USER',
   StepRelationshipMetadata
 > = {
-  ACCOUNT_HAS_USER: {
-    _type: 'acme_account_has_user',
+  ACCOUNT_HAS_DOMAIN: {
+    _type: 'mimecast_account_has_domain',
     sourceType: Entities.ACCOUNT._type,
     _class: RelationshipClass.HAS,
-    targetType: Entities.USER._type,
+    targetType: Entities.DOMAIN._type,
   },
-  ACCOUNT_HAS_GROUP: {
-    _type: 'acme_account_has_group',
-    sourceType: Entities.ACCOUNT._type,
-    _class: RelationshipClass.HAS,
-    targetType: Entities.GROUP._type,
-  },
-  GROUP_HAS_USER: {
-    _type: 'acme_group_has_user',
-    sourceType: Entities.GROUP._type,
+  DOMAIN_HAS_USER: {
+    _type: 'mimecast_domain_has_user',
+    sourceType: Entities.DOMAIN._type,
     _class: RelationshipClass.HAS,
     targetType: Entities.USER._type,
   },

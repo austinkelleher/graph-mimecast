@@ -7,10 +7,15 @@ if (process.env.LOAD_ENV) {
     path: path.join(__dirname, '../.env'),
   });
 }
-const DEFAULT_CLIENT_ID = 'dummy-acme-client-id';
-const DEFAULT_CLIENT_SECRET = 'dummy-acme-client-secret';
+
+const DEFAULT_CLIENT_ID = 'dummy-mimecast-access-key';
+const DEFAULT_CLIENT_SECRET = 'dummy-mimecast-secret-key';
+const DEFAULT_APP_KEY = 'dummy-mimecast-app-key';
+const DEFAULT_APP_ID = 'dummy-mimecast-app-id';
 
 export const integrationConfig: IntegrationConfig = {
   clientId: process.env.CLIENT_ID || DEFAULT_CLIENT_ID,
   clientSecret: process.env.CLIENT_SECRET || DEFAULT_CLIENT_SECRET,
+  appKey: process.env.APP_KEY || DEFAULT_APP_KEY,
+  appId: process.env.APP_ID || DEFAULT_APP_ID,
 };
