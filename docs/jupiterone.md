@@ -2,9 +2,6 @@
 
 ## Mimecast + JupiterOne Integration Benefits
 
-TODO: Iterate the benefits of ingesting data from the provider into JupiterOne.
-Consider the following examples:
-
 - Visualize Mimecast awareness training campaigns in your JupiterOne account.
 - Map training campaign recipient emails to all awareness training campaigns in
   which they are a participant

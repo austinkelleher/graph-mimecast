@@ -1,10 +1,10 @@
-import * as dotenv from 'dotenv';
-import * as path from 'path';
+import { config } from 'dotenv';
+import { join } from 'path';
 import { IntegrationConfig } from '../src/config';
 
 if (process.env.LOAD_ENV) {
-  dotenv.config({
-    path: path.join(__dirname, '../.env'),
+  config({
+    path: join(__dirname, '../.env'),
   });
 }
 

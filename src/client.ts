@@ -1,12 +1,11 @@
 import {
-  IntegrationError,
   IntegrationLogger,
   IntegrationProviderAPIError,
   IntegrationProviderAuthenticationError,
 } from '@jupiterone/integration-sdk-core';
 import { createHmac } from 'crypto';
-import * as uuid from 'uuid';
-import got from 'got';
+import { v4 as uuid } from 'uuid';
+import got, { Response } from 'got';
 import { IntegrationConfig } from './config';
 import {
   Account,
@@ -18,9 +17,22 @@ import {
 } from './types';
 
 const BASE_URI = 'https://us-api.mimecast.com';
+// https://integrations.mimecast.com/documentation/api-overview/api-concepts/
 const EMPTY_BODY = JSON.stringify({
   data: [],
 });
+
+const statusTextMap = {
+  400: 'Bad Request',
+  401: 'Unauthorized',
+  403: 'Forbidden',
+  404: 'Not Found',
+  429: 'Too Many Reqeusts',
+  500: 'Internal Server Error',
+  502: 'Bad Gateway',
+  503: 'Service Unavailable',
+  504: 'Gateway Timeout',
+};
 
 /**
  * An APIClient maintains authentication state and provides an interface to
@@ -57,7 +69,7 @@ export class APIClient {
     const nowUTCString = now.toUTCString();
     const nowReallyUTCString =
       nowUTCString.slice(0, nowUTCString.length - 3) + 'UTC';
-    const reqId = uuid.v4();
+    const reqId = uuid();
     return {
       'x-mc-date': nowReallyUTCString,
       'x-mc-req-id': reqId,
@@ -66,102 +78,125 @@ export class APIClient {
     };
   }
 
-  private verifyResponse(response: ApiResponse<any>) {
+  // route-agnostic response validation
+  private verifyResponse(response: ApiResponse<any>, endpoint: string) {
     if (response.meta.status !== 200) {
-      const toThrow = new IntegrationError({
-        message: `encountered non-200 status code in response body despite getting a 200 in request lib: ${response.meta.status}`,
-        code: 'API_CLIENT_RESPONSE_VERIFICATION_ERROR',
+      const toThrow = new IntegrationProviderAPIError({
+        message: `encountered non-200 status code in response body despite getting a 200 in request lib: ${JSON.stringify(
+          response,
+        )}`,
+        endpoint,
+        status: response.meta.status,
+        statusText: statusTextMap[response.meta.status] || 'unknown',
       });
-      this.logger.error(toThrow, response);
       throw toThrow;
     }
     if (response.fail && response.fail.length) {
-      const toThrow = new IntegrationError({
-        message: `response contains entries in meta.failure array: ${JSON.stringify(
-          response.fail,
-        )}`,
-        code: 'API_CLIENT_RESPONSE_VERIFICATION_ERROR',
-      });
-      this.logger.error(toThrow, response);
-      throw toThrow;
-    }
-    if (!response.data || !response.data.length) {
-      const toThrow = new IntegrationError({
-        message: 'response is missing data',
-        code: 'API_CLIENT_RESPONSE_VERIFICATION_ERROR',
-      });
-      this.logger.error(toThrow, response);
-      throw toThrow;
+      if (
+        response.fail[0].errors.filter(
+          (error) => error.code === 'err_developer_key',
+        ).length
+      ) {
+        throw new IntegrationProviderAPIError({
+          message: `encountered known intermittent application id error: ${JSON.stringify(
+            response,
+          )}`,
+          endpoint,
+          status: 503,
+          statusText: statusTextMap[503],
+        });
+      } else {
+        this.logger.error(
+          'response contains entries in failure array',
+          response,
+        );
+      }
     }
   }
 
   public async verifyAuthentication(): Promise<void> {
     const uri = '/api/account/get-account';
-    const request = got.post(BASE_URI + uri, {
+    const endpoint = BASE_URI + uri;
+    const request = got.post(endpoint, {
       headers: this.generateHeaders(uri),
       body: EMPTY_BODY,
     });
-
+    let result: Response<string>;
     try {
-      const result = await request;
-      this.verifyResponse(JSON.parse(result.body) as ApiResponse<Account>);
-      console.log(result);
+      result = await request;
     } catch (err) {
       throw new IntegrationProviderAuthenticationError({
         cause: err,
-        endpoint: BASE_URI + uri,
+        endpoint,
         status: err.status,
         statusText: err.statusText,
       });
     }
+    this.verifyResponse(
+      JSON.parse(result.body) as ApiResponse<Account>,
+      endpoint,
+    );
   }
 
   public async getAccount(): Promise<Account> {
     const uri = '/api/account/get-account';
-    const request = got.post(BASE_URI + uri, {
+    const endpoint = BASE_URI + uri;
+    const request = got.post(endpoint, {
       headers: this.generateHeaders(uri),
       body: EMPTY_BODY,
     });
+    let response: ApiResponse<Account>;
     try {
       const result = await request;
-      const response = JSON.parse(result.body) as ApiResponse<Account>;
-      this.verifyResponse(response);
-      return response.data[0];
+      response = JSON.parse(result.body);
     } catch (err) {
       throw new IntegrationProviderAPIError({
         cause: err,
-        endpoint: BASE_URI + uri,
+        endpoint,
         status: err.status,
         statusText: err.statusText,
       });
     }
+    this.verifyResponse(response, endpoint);
+    if (!response.data.length) {
+      throw new IntegrationProviderAPIError({
+        cause: new Error('no account data found'),
+        endpoint: endpoint,
+        status: 404,
+        statusText: statusTextMap[404],
+      });
+    }
+    return response.data[0];
   }
 
   public async getDomains(): Promise<Domain[]> {
     const uri = '/api/domain/get-internal-domain';
-    const request = got.post(BASE_URI + uri, {
+    const endpoint = BASE_URI + uri;
+    const request = got.post(endpoint, {
       headers: this.generateHeaders(uri),
       body: EMPTY_BODY,
     });
+    let response: ApiResponse<Domain>;
     try {
       const result = await request;
-      const response = JSON.parse(result.body) as ApiResponse<Domain>;
-      this.verifyResponse(response);
-      return response.data;
+      response = JSON.parse(result.body);
     } catch (err) {
       throw new IntegrationProviderAPIError({
         cause: err,
-        endpoint: BASE_URI + uri,
+        endpoint: endpoint,
         status: err.status,
         statusText: err.statusText,
       });
     }
+    this.verifyResponse(response, endpoint);
+    return response.data;
   }
 
   // TODO: pagination support
   public async getUsers(domain: string): Promise<User[]> {
     const uri = '/api/user/get-internal-users';
-    const request = got.post(BASE_URI + uri, {
+    const endpoint = BASE_URI + uri;
+    const request = got.post(endpoint, {
       headers: this.generateHeaders(uri),
       body: JSON.stringify({
         data: [
@@ -171,19 +206,23 @@ export class APIClient {
         ],
       }),
     });
+    let response: ApiResponse<UserResponse>;
     try {
       const result = await request;
-      const response = JSON.parse(result.body) as ApiResponse<UserResponse>;
-      this.verifyResponse(response);
-      return response.data[0].users;
+      response = JSON.parse(result.body);
     } catch (err) {
       throw new IntegrationProviderAPIError({
         cause: err,
-        endpoint: BASE_URI + uri,
+        endpoint: endpoint,
         status: err.status,
         statusText: err.statusText,
       });
     }
+    this.verifyResponse(response, endpoint);
+    if (!response.data.length) {
+      return [];
+    }
+    return response.data[0].users;
   }
 
   // TODO WIP: need access to this part of api
@@ -196,7 +235,7 @@ export class APIClient {
     try {
       const result = await request;
       const response = JSON.parse(result.body) as ApiResponse<Campaign>;
-      this.verifyResponse(response);
+      this.verifyResponse(response, BASE_URI + uri);
       return response.data;
     } catch (err) {
       throw new IntegrationProviderAPIError({

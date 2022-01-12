@@ -33,6 +33,12 @@ interface Title {
   title: string;
 }
 
+interface MimecastError {
+  code: string;
+  message: string;
+  retryable: boolean;
+}
+
 export interface Campaign {
   percentCorrect: number;
   percentComplete: number;
@@ -110,5 +116,9 @@ export interface ApiResponse<T> {
       previous?: string;
     };
   };
-  fail?: any[];
+  fail?: [
+    {
+      errors: MimecastError[];
+    },
+  ];
 }
