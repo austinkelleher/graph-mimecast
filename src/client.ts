@@ -57,8 +57,10 @@ export class APIClient {
   ) {}
 
   /**
+   * https://github.com/sindresorhus/got/blob/6eb0fd3a2ccb9545ccc662f44fa1adf7d7cc4da8/documentation/9-hooks.md#afterresponse
    * handles known intermittent application id error
    * https://jupiterone.atlassian.net/browse/INT-968?focusedCommentId=13289
+   * Note: this will only retry once for this specific error. It does not adherere to the retry options defined for got, those are for non-2XX/3XX codes
    */
   private gotHooks = {
     afterResponse: [

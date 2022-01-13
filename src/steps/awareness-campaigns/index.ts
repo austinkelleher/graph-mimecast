@@ -55,15 +55,22 @@ export async function fetchAwarenessCampaignEnrollment({
       _type: Entities.AWARENESS_CAMPAIGN._type,
     },
     async (campaignEntity) => {
+      // grab all users assigned to a given campaign
       const userDatas = await apiClient.getAwarenessCampaignUserData(
         campaignEntity._key,
       );
+      // if entity for user exists (we use email as _key), create relationship
       for (const userData of userDatas) {
         const userEntity = await jobState.findEntity(userData.email);
-        if (userEntity === null) continue;
+        if (userEntity === null) {
+          continue;
+        }
         let completedTraining = true;
+        // If completed, status will either be CORRECT or INCORRECT, SENT means todo
         for (const status of Object.values(userData.results)) {
-          if (status === 'SENT') completedTraining = false;
+          if (status === 'SENT') {
+            completedTraining = false;
+          }
         }
         await jobState.addRelationship(
           createDirectRelationship({

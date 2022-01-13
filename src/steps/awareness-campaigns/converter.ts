@@ -9,6 +9,7 @@ import { Entities } from '../constants';
 export function createAwarenessCampaignEntity(
   awarenessCampaign: AwarenessCampaign,
 ): Entity {
+  // trim properties not pertinent for asset tracking
   awarenessCampaign = {
     ...awarenessCampaign,
     numCorrectAnswers: undefined,
