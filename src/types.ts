@@ -134,6 +134,29 @@ export interface AwarenessCampaignUserData {
   userState: string;
 }
 
+export interface ApiResponse<T> {
+  data: T[];
+  meta: {
+    status: number;
+    pagination?: {
+      pageSize: number;
+      totalCount: number;
+      recordStart?: number;
+      next?: string;
+      previous?: string;
+    };
+  };
+  fail?: [
+    {
+      errors: MimecastError[];
+    },
+  ];
+}
+
+/**
+ * Phishing Campaigns do not appear to be functional in Mimecast despite having api docs.
+ * We can add ingestion support after feature is confirmed working.
+ */
 export interface PhishingCampaign {
   id: string;
   name: string;
@@ -175,23 +198,4 @@ export interface PhishingCampaignUserData {
   numCorrectAnswers: number;
   numIncorrectAnswers: number;
   userState: string;
-}
-
-export interface ApiResponse<T> {
-  data: T[];
-  meta: {
-    status: number;
-    pagination?: {
-      pageSize: number;
-      totalCount: number;
-      recordStart?: number;
-      next?: string;
-      previous?: string;
-    };
-  };
-  fail?: [
-    {
-      errors: MimecastError[];
-    },
-  ];
 }

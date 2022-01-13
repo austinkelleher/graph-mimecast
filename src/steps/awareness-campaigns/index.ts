@@ -13,7 +13,7 @@ import { ACCOUNT_ENTITY_KEY } from '../account';
 import { Entities, Relationships, Steps } from '../constants';
 import { createAwarenessCampaignEntity } from './converter';
 
-async function fetchAwarenessCampaigns({
+export async function fetchAwarenessCampaigns({
   instance,
   jobState,
   logger,
@@ -44,7 +44,7 @@ async function fetchAwarenessCampaigns({
   }
 }
 
-async function fetchAwarenessCampaignEnrollment({
+export async function fetchAwarenessCampaignEnrollment({
   instance,
   jobState,
   logger,

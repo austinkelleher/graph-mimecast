@@ -5,7 +5,7 @@ import {
 } from '@jupiterone/integration-sdk-core';
 import { createHmac } from 'crypto';
 import { v4 as uuid } from 'uuid';
-import got, { Response } from 'got';
+import got, { RequiredRetryOptions, Response } from 'got';
 import { IntegrationConfig } from './config';
 import {
   Account,
@@ -24,6 +24,11 @@ const BASE_URI = 'https://us-api.mimecast.com';
 const EMPTY_BODY = JSON.stringify({
   data: [],
 });
+// https://github.com/sindresorhus/got/blob/HEAD/documentation/7-retry.md#retry-api
+const gotRetryOptions: Partial<RequiredRetryOptions> = {
+  limit: 3,
+  methods: ['POST'],
+};
 
 const statusTextMap = {
   400: 'Bad Request',
@@ -50,6 +55,33 @@ export class APIClient {
     readonly config: IntegrationConfig,
     readonly logger: IntegrationLogger,
   ) {}
+
+  /**
+   * handles known intermittent application id error
+   * https://jupiterone.atlassian.net/browse/INT-968?focusedCommentId=13289
+   */
+  private gotHooks = {
+    afterResponse: [
+      (response, retryWithMergedOptions) => {
+        const mimecastResponse = JSON.parse(
+          response.body,
+        ) as ApiResponse<unknown>;
+        if (mimecastResponse.fail && mimecastResponse.fail.length) {
+          if (
+            mimecastResponse.fail[0].errors.filter(
+              (error) => error.code === 'err_developer_key',
+            ).length
+          ) {
+            this.logger.info(
+              'encountered known intermittent application id error. Retrying request',
+            );
+            return retryWithMergedOptions();
+          }
+        }
+        return response;
+      },
+    ],
+  };
 
   private generateAuthToken(
     dateString: string,
@@ -123,6 +155,8 @@ export class APIClient {
     const request = got.post(endpoint, {
       headers: this.generateHeaders(uri),
       body: EMPTY_BODY,
+      retry: gotRetryOptions,
+      hooks: this.gotHooks,
     });
     let result: Response<string>;
     try {
@@ -147,6 +181,8 @@ export class APIClient {
     const request = got.post(endpoint, {
       headers: this.generateHeaders(uri),
       body: EMPTY_BODY,
+      retry: gotRetryOptions,
+      hooks: this.gotHooks,
     });
     let response: ApiResponse<Account>;
     try {
@@ -178,6 +214,8 @@ export class APIClient {
     const request = got.post(endpoint, {
       headers: this.generateHeaders(uri),
       body: EMPTY_BODY,
+      retry: gotRetryOptions,
+      hooks: this.gotHooks,
     });
     let response: ApiResponse<Domain>;
     try {
@@ -208,6 +246,8 @@ export class APIClient {
           },
         ],
       }),
+      retry: gotRetryOptions,
+      hooks: this.gotHooks,
     });
     let response: ApiResponse<UserResponse>;
     try {
@@ -234,6 +274,8 @@ export class APIClient {
     const request = got.post(endpoint, {
       headers: this.generateHeaders(uri),
       body: EMPTY_BODY,
+      retry: gotRetryOptions,
+      hooks: this.gotHooks,
     });
     let response: ApiResponse<AwarenessCampaignResponse>;
     try {
@@ -264,6 +306,8 @@ export class APIClient {
       body: JSON.stringify({
         data: [{ id: campaignId }],
       }),
+      retry: gotRetryOptions,
+      hooks: this.gotHooks,
     });
     let response: ApiResponse<AwarenessCampaignUserDataResponse>;
     try {
