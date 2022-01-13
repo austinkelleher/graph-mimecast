@@ -15,7 +15,7 @@ export function createAwarenessCampaignEntity(
     allOtherCampaigns: undefined,
     title: undefined,
     emailMsg: undefined,
-  };
+  } as any;
   return createIntegrationEntity({
     entityData: {
       source: awarenessCampaign,
