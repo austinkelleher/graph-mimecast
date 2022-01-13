@@ -72,8 +72,8 @@ export class APIClient {
               (error) => error.code === 'err_developer_key',
             ).length
           ) {
-            this.logger.info(
-              'encountered known intermittent application id error. Retrying request',
+            this.logger.warn(
+              'Encountered known intermittent application id error. Retrying request',
             );
             return retryWithMergedOptions();
           }
@@ -296,6 +296,7 @@ export class APIClient {
     return response.data[0].campaigns;
   }
 
+  // TODO: pagination support
   public async getAwarenessCampaignUserData(
     campaignId: string,
   ): Promise<AwarenessCampaignUserData[]> {
