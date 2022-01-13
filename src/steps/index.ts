@@ -1,7 +1,12 @@
 import { accountSteps } from './account';
 import { domainSteps } from './domains';
 import { userSteps } from './users';
-// import { campaignSteps } from "./campaigns";  // TODO: finish when/if we get training campaigns added
-const integrationSteps = [...accountSteps, ...domainSteps, ...userSteps];
+import { awarenessCampaignSteps } from './awareness-campaigns';
+const integrationSteps = [
+  ...accountSteps,
+  ...domainSteps,
+  ...userSteps,
+  ...awarenessCampaignSteps,
+];
 
 export { integrationSteps };

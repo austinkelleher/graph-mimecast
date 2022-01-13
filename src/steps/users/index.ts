@@ -9,7 +9,7 @@ import { IntegrationConfig } from '../../config';
 import { Entities, Relationships, Steps } from '../constants';
 import { createUserEntity } from './converter';
 
-export async function fetchUsers({
+async function fetchUsers({
   instance,
   jobState,
   logger,

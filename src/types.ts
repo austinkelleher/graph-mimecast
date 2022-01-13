@@ -1,6 +1,6 @@
 // Providers often supply types with their API libraries.
 
-interface AllOtherCampagins {
+interface AllOtherCampaigns {
   numCorrectAnswers: number;
   numCampaigns: number;
   numComplete: number;
@@ -17,8 +17,9 @@ interface Group {
 }
 
 interface CorrectAnswers {
-  forQuestion3: number;
-  forQuestion2: number;
+  forQuestion4?: number;
+  forQuestion3?: number;
+  forQuestion2?: number;
   forQuestion1: number;
 }
 
@@ -39,25 +40,9 @@ interface MimecastError {
   retryable: boolean;
 }
 
-export interface Campaign {
-  percentCorrect: number;
-  percentComplete: number;
-  locked: boolean;
-  numCorrectAnswers: CorrectAnswers;
+interface Template {
   id: string;
-  numCompleted: number;
-  allOtherCampagins: AllOtherCampagins;
-  group: Group;
-  name: string;
-  title: Title;
-  createDate: string;
-  numSent: number;
-  emailCustomized: boolean;
-  launchDate: string;
-  emailMsg: {
-    body: string;
-    subject: string;
-  };
+  displayTitle: string;
 }
 
 export interface Account {
@@ -82,6 +67,7 @@ export interface Account {
   userCount: number;
 }
 
+// paginate-able
 export interface UserResponse {
   users: User[];
   userCount: number;
@@ -102,6 +88,93 @@ export interface Domain {
   sendOnly: boolean;
   local: boolean;
   inboundType: string;
+}
+
+export interface AwarenessCampaignResponse {
+  campaigns: AwarenessCampaign[];
+}
+
+export interface AwarenessCampaign {
+  percentCorrect: number;
+  percentComplete: number;
+  locked: boolean;
+  numCorrectAnswers: CorrectAnswers;
+  id: string;
+  numCompleted: number;
+  allOtherCampaigns: AllOtherCampaigns;
+  group: Group;
+  name: string;
+  title: Title;
+  createDate: string;
+  numSent: number;
+  emailCustomized: boolean;
+  launchDate: string;
+  emailMsg: {
+    body: string;
+    subject: string;
+  };
+}
+
+// paginate-able
+export interface AwarenessCampaignUserDataResponse {
+  items: AwarenessCampaignUserData[];
+}
+
+export interface AwarenessCampaignUserData {
+  name: string;
+  email: string;
+  department: string;
+  results: {
+    forQuestion1: string;
+    forQuestion2?: string;
+    forQuestion3?: string;
+    forQuestion4?: string;
+  };
+  acknowledgement: boolean;
+  userState: string;
+}
+
+export interface PhishingCampaign {
+  id: string;
+  name: string;
+  templates: Template[];
+  landingPage: {
+    id: string;
+    name: string;
+  };
+  group: Group;
+  launchDate: string;
+  locale: string;
+  timeSlotSelected: string;
+  sender: {
+    name: string;
+    email: string;
+  };
+  numSubmitted: number;
+  numOpened: number;
+  numClicked: number;
+  numSent: number;
+  numReported: number;
+  locked: boolean;
+}
+
+// paginate-able
+export interface PhishingCampaignUserDataResponse {
+  items: PhishingCampaignUserData[];
+}
+
+export interface PhishingCampaignUserData {
+  name: string;
+  email: string;
+  templateName: string;
+  department: string;
+  status: string;
+  numCampaignsSent: number;
+  numCampaignsClicked: number;
+  numTrainingModulesAssigned: number;
+  numCorrectAnswers: number;
+  numIncorrectAnswers: number;
+  userState: string;
 }
 
 export interface ApiResponse<T> {

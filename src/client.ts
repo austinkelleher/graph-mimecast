@@ -10,7 +10,10 @@ import { IntegrationConfig } from './config';
 import {
   Account,
   ApiResponse,
-  Campaign,
+  AwarenessCampaign,
+  AwarenessCampaignResponse,
+  AwarenessCampaignUserData,
+  AwarenessCampaignUserDataResponse,
   Domain,
   User,
   UserResponse,
@@ -225,26 +228,60 @@ export class APIClient {
     return response.data[0].users;
   }
 
-  // TODO WIP: need access to this part of api
-  public async getCampaigns(): Promise<Campaign[]> {
+  public async getAwarenessCampaigns(): Promise<AwarenessCampaign[]> {
     const uri = '/api/awareness-training/campaign/get-campaigns';
-    const request = got.post(BASE_URI + uri, {
+    const endpoint = BASE_URI + uri;
+    const request = got.post(endpoint, {
       headers: this.generateHeaders(uri),
       body: EMPTY_BODY,
     });
+    let response: ApiResponse<AwarenessCampaignResponse>;
     try {
       const result = await request;
-      const response = JSON.parse(result.body) as ApiResponse<Campaign>;
-      this.verifyResponse(response, BASE_URI + uri);
-      return response.data;
+      response = JSON.parse(result.body);
     } catch (err) {
       throw new IntegrationProviderAPIError({
         cause: err,
-        endpoint: BASE_URI + uri,
+        endpoint,
         status: err.status,
         statusText: err.statusText,
       });
     }
+    this.verifyResponse(response, endpoint);
+    if (!response.data.length) {
+      return [];
+    }
+    return response.data[0].campaigns;
+  }
+
+  public async getAwarenessCampaignUserData(
+    campaignId: string,
+  ): Promise<AwarenessCampaignUserData[]> {
+    const uri = '/api/awareness-training/campaign/get-user-data';
+    const endpoint = BASE_URI + uri;
+    const request = got.post(endpoint, {
+      headers: this.generateHeaders(uri),
+      body: JSON.stringify({
+        data: [{ id: campaignId }],
+      }),
+    });
+    let response: ApiResponse<AwarenessCampaignUserDataResponse>;
+    try {
+      const result = await request;
+      response = JSON.parse(result.body);
+    } catch (err) {
+      throw new IntegrationProviderAPIError({
+        cause: err,
+        endpoint,
+        status: err.status,
+        statusText: err.statusText,
+      });
+    }
+    this.verifyResponse(response, endpoint);
+    if (!response.data.length) {
+      return [];
+    }
+    return response.data[0].items;
   }
 }
 

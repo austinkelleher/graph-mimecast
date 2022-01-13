@@ -22,11 +22,6 @@ export async function fetchDomains({
   )) as string;
   const accountEntity = (await jobState.findEntity(accountEntityKey)) as Entity;
 
-  if (!accountEntity) {
-    throw new IntegrationMissingKeyError(
-      `Expected to find Account entity in jobState.`,
-    );
-  }
   const apiClient = createAPIClient(instance.config, logger);
   const domains = await apiClient.getDomains();
 
