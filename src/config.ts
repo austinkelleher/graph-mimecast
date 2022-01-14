@@ -28,6 +28,13 @@ export const instanceConfigFields: IntegrationInstanceConfigFieldMap = {
     type: 'string',
     mask: true,
   },
+  appKey: {
+    type: 'string',
+    mask: true,
+  },
+  appId: {
+    type: 'string',
+  },
 };
 
 /**
@@ -44,6 +51,16 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
    * The provider API client secret used to authenticate requests.
    */
   clientSecret: string;
+
+  /**
+   * The appKey for your JupiterOne integration with your mimecast account. Used to authenticate requests.
+   */
+  appKey: string;
+
+  /**
+   * The appId for your JupiterOne integration with your mimecast account. Used to authenticate requests.
+   */
+  appId: string;
 }
 
 export async function validateInvocation(
@@ -53,10 +70,10 @@ export async function validateInvocation(
 
   if (!config.clientId || !config.clientSecret) {
     throw new IntegrationValidationError(
-      'Config requires all of {clientId, clientSecret}',
+      'Config requires all of {clientId, clientSecret, appKey, appId}',
     );
   }
 
-  const apiClient = createAPIClient(config);
+  const apiClient = createAPIClient(config, context.logger);
   await apiClient.verifyAuthentication();
 }

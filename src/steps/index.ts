@@ -1,6 +1,7 @@
 import { accountSteps } from './account';
-import { accessSteps } from './access';
-
-const integrationSteps = [...accountSteps, ...accessSteps];
+import { domainSteps } from './domains';
+import { userSteps } from './users';
+// import { campaignSteps } from "./campaigns";  // TODO: finish when/if we get training campaigns added
+const integrationSteps = [...accountSteps, ...domainSteps, ...userSteps];
 
 export { integrationSteps };

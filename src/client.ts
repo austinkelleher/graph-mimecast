@@ -1,11 +1,38 @@
-import http from 'http';
-
-import { IntegrationProviderAuthenticationError } from '@jupiterone/integration-sdk-core';
-
+import {
+  IntegrationLogger,
+  IntegrationProviderAPIError,
+  IntegrationProviderAuthenticationError,
+} from '@jupiterone/integration-sdk-core';
+import { createHmac } from 'crypto';
+import { v4 as uuid } from 'uuid';
+import got, { Response } from 'got';
 import { IntegrationConfig } from './config';
-import { AcmeUser, AcmeGroup } from './types';
+import {
+  Account,
+  ApiResponse,
+  Campaign,
+  Domain,
+  User,
+  UserResponse,
+} from './types';
 
-export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
+const BASE_URI = 'https://us-api.mimecast.com';
+// https://integrations.mimecast.com/documentation/api-overview/api-concepts/
+const EMPTY_BODY = JSON.stringify({
+  data: [],
+});
+
+const statusTextMap = {
+  400: 'Bad Request',
+  401: 'Unauthorized',
+  403: 'Forbidden',
+  404: 'Not Found',
+  429: 'Too Many Reqeusts',
+  500: 'Internal Server Error',
+  502: 'Bad Gateway',
+  503: 'Service Unavailable',
+  504: 'Gateway Timeout',
+};
 
 /**
  * An APIClient maintains authentication state and provides an interface to
@@ -16,109 +43,214 @@ export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
  * resources.
  */
 export class APIClient {
-  constructor(readonly config: IntegrationConfig) {}
+  constructor(
+    readonly config: IntegrationConfig,
+    readonly logger: IntegrationLogger,
+  ) {}
+
+  private generateAuthToken(
+    dateString: string,
+    reqId: string,
+    uri: string,
+  ): string {
+    const { clientId, clientSecret, appKey } = this.config;
+
+    const dataToSign = `${dateString}:${reqId}:${uri}:${appKey}`;
+    const hmac = createHmac('sha1', Buffer.from(clientSecret, 'base64'));
+    hmac.update(dataToSign);
+    const signed = hmac.digest('base64');
+
+    return `MC ${clientId}:${signed}`;
+  }
+
+  private generateHeaders(uri: string) {
+    const { appId } = this.config;
+    const now = new Date();
+    const nowUTCString = now.toUTCString();
+    const nowReallyUTCString =
+      nowUTCString.slice(0, nowUTCString.length - 3) + 'UTC';
+    const reqId = uuid();
+    return {
+      'x-mc-date': nowReallyUTCString,
+      'x-mc-req-id': reqId,
+      'x-mc-app-id': appId,
+      Authorization: this.generateAuthToken(nowReallyUTCString, reqId, uri),
+    };
+  }
+
+  // route-agnostic response validation
+  private verifyResponse(response: ApiResponse<any>, endpoint: string) {
+    if (response.meta.status !== 200) {
+      const toThrow = new IntegrationProviderAPIError({
+        message: `encountered non-200 status code in response body despite getting a 200 in request lib: ${JSON.stringify(
+          response,
+        )}`,
+        endpoint,
+        status: response.meta.status,
+        statusText: statusTextMap[response.meta.status] || 'unknown',
+      });
+      throw toThrow;
+    }
+    if (response.fail && response.fail.length) {
+      if (
+        response.fail[0].errors.filter(
+          (error) => error.code === 'err_developer_key',
+        ).length
+      ) {
+        throw new IntegrationProviderAPIError({
+          message: `encountered known intermittent application id error: ${JSON.stringify(
+            response,
+          )}`,
+          endpoint,
+          status: 503,
+          statusText: statusTextMap[503],
+        });
+      } else {
+        this.logger.error(
+          'response contains entries in failure array',
+          response,
+        );
+      }
+    }
+  }
 
   public async verifyAuthentication(): Promise<void> {
-    // TODO make the most light-weight request possible to validate
-    // authentication works with the provided credentials, throw an err if
-    // authentication fails
-    const request = new Promise<void>((resolve, reject) => {
-      http.get(
-        {
-          hostname: 'localhost',
-          port: 443,
-          path: '/api/v1/some/endpoint?limit=1',
-          agent: false,
-          timeout: 10,
-        },
-        (res) => {
-          if (res.statusCode !== 200) {
-            reject(new Error('Provider authentication failed'));
-          } else {
-            resolve();
-          }
-        },
-      );
+    const uri = '/api/account/get-account';
+    const endpoint = BASE_URI + uri;
+    const request = got.post(endpoint, {
+      headers: this.generateHeaders(uri),
+      body: EMPTY_BODY,
     });
-
+    let result: Response<string>;
     try {
-      await request;
+      result = await request;
     } catch (err) {
       throw new IntegrationProviderAuthenticationError({
         cause: err,
-        endpoint: 'https://localhost/api/v1/some/endpoint?limit=1',
+        endpoint,
+        status: err.status,
+        statusText: err.statusText,
+      });
+    }
+    this.verifyResponse(
+      JSON.parse(result.body) as ApiResponse<Account>,
+      endpoint,
+    );
+  }
+
+  public async getAccount(): Promise<Account> {
+    const uri = '/api/account/get-account';
+    const endpoint = BASE_URI + uri;
+    const request = got.post(endpoint, {
+      headers: this.generateHeaders(uri),
+      body: EMPTY_BODY,
+    });
+    let response: ApiResponse<Account>;
+    try {
+      const result = await request;
+      response = JSON.parse(result.body);
+    } catch (err) {
+      throw new IntegrationProviderAPIError({
+        cause: err,
+        endpoint,
+        status: err.status,
+        statusText: err.statusText,
+      });
+    }
+    this.verifyResponse(response, endpoint);
+    if (!response.data.length) {
+      throw new IntegrationProviderAPIError({
+        cause: new Error('no account data found'),
+        endpoint: endpoint,
+        status: 404,
+        statusText: statusTextMap[404],
+      });
+    }
+    return response.data[0];
+  }
+
+  public async getDomains(): Promise<Domain[]> {
+    const uri = '/api/domain/get-internal-domain';
+    const endpoint = BASE_URI + uri;
+    const request = got.post(endpoint, {
+      headers: this.generateHeaders(uri),
+      body: EMPTY_BODY,
+    });
+    let response: ApiResponse<Domain>;
+    try {
+      const result = await request;
+      response = JSON.parse(result.body);
+    } catch (err) {
+      throw new IntegrationProviderAPIError({
+        cause: err,
+        endpoint: endpoint,
+        status: err.status,
+        statusText: err.statusText,
+      });
+    }
+    this.verifyResponse(response, endpoint);
+    return response.data;
+  }
+
+  // TODO: pagination support
+  public async getUsers(domain: string): Promise<User[]> {
+    const uri = '/api/user/get-internal-users';
+    const endpoint = BASE_URI + uri;
+    const request = got.post(endpoint, {
+      headers: this.generateHeaders(uri),
+      body: JSON.stringify({
+        data: [
+          {
+            domain,
+          },
+        ],
+      }),
+    });
+    let response: ApiResponse<UserResponse>;
+    try {
+      const result = await request;
+      response = JSON.parse(result.body);
+    } catch (err) {
+      throw new IntegrationProviderAPIError({
+        cause: err,
+        endpoint: endpoint,
+        status: err.status,
+        statusText: err.statusText,
+      });
+    }
+    this.verifyResponse(response, endpoint);
+    if (!response.data.length) {
+      return [];
+    }
+    return response.data[0].users;
+  }
+
+  // TODO WIP: need access to this part of api
+  public async getCampaigns(): Promise<Campaign[]> {
+    const uri = '/api/awareness-training/campaign/get-campaigns';
+    const request = got.post(BASE_URI + uri, {
+      headers: this.generateHeaders(uri),
+      body: EMPTY_BODY,
+    });
+    try {
+      const result = await request;
+      const response = JSON.parse(result.body) as ApiResponse<Campaign>;
+      this.verifyResponse(response, BASE_URI + uri);
+      return response.data;
+    } catch (err) {
+      throw new IntegrationProviderAPIError({
+        cause: err,
+        endpoint: BASE_URI + uri,
         status: err.status,
         statusText: err.statusText,
       });
     }
   }
-
-  /**
-   * Iterates each user resource in the provider.
-   *
-   * @param iteratee receives each resource to produce entities/relationships
-   */
-  public async iterateUsers(
-    iteratee: ResourceIteratee<AcmeUser>,
-  ): Promise<void> {
-    // TODO paginate an endpoint, invoke the iteratee with each record in the
-    // page
-    //
-    // The provider API will hopefully support pagination. Functions like this
-    // should maintain pagination state, and for each page, for each record in
-    // the page, invoke the `ResourceIteratee`. This will encourage a pattern
-    // where each resource is processed and dropped from memory.
-
-    const users: AcmeUser[] = [
-      {
-        id: 'acme-user-1',
-        name: 'User One',
-      },
-      {
-        id: 'acme-user-2',
-        name: 'User Two',
-      },
-    ];
-
-    for (const user of users) {
-      await iteratee(user);
-    }
-  }
-
-  /**
-   * Iterates each group resource in the provider.
-   *
-   * @param iteratee receives each resource to produce entities/relationships
-   */
-  public async iterateGroups(
-    iteratee: ResourceIteratee<AcmeGroup>,
-  ): Promise<void> {
-    // TODO paginate an endpoint, invoke the iteratee with each record in the
-    // page
-    //
-    // The provider API will hopefully support pagination. Functions like this
-    // should maintain pagination state, and for each page, for each record in
-    // the page, invoke the `ResourceIteratee`. This will encourage a pattern
-    // where each resource is processed and dropped from memory.
-
-    const groups: AcmeGroup[] = [
-      {
-        id: 'acme-group-1',
-        name: 'Group One',
-        users: [
-          {
-            id: 'acme-user-1',
-          },
-        ],
-      },
-    ];
-
-    for (const group of groups) {
-      await iteratee(group);
-    }
-  }
 }
 
-export function createAPIClient(config: IntegrationConfig): APIClient {
-  return new APIClient(config);
+export function createAPIClient(
+  config: IntegrationConfig,
+  logger: IntegrationLogger,
+): APIClient {
+  return new APIClient(config, logger);
 }

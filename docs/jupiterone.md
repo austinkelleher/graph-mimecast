@@ -1,13 +1,12 @@
 # Integration with JupiterOne
 
-## {{provider}} + JupiterOne Integration Benefits
+## Mimecast + JupiterOne Integration Benefits
 
-TODO: Iterate the benefits of ingesting data from the provider into JupiterOne.
-Consider the following examples:
-
-- Visualize {{provider}} services, teams, and users in the JupiterOne graph.
-- Map {{provider}} users to employees in your JupiterOne account.
-- Monitor changes to {{provider}} users using JupiterOne alerts.
+- Visualize Mimecast awareness training campaigns in your JupiterOne account.
+- Map training campaign recipient emails to all awareness training campaigns in
+  which they are a participant
+- Monitor campaign status of awareness training campaign or a specific user's
+  participate across multiple campaigns using JupiterOne account
 
 ## How it Works
 
@@ -96,11 +95,11 @@ https://github.com/JupiterOne/sdk/blob/main/docs/integrations/development.md
 
 The following entities are created:
 
-| Resources | Entity `_type` | Entity `_class` |
-| --------- | -------------- | --------------- |
-| Account   | `acme_account` | `Account`       |
-| User      | `acme_user`    | `User`          |
-| UserGroup | `acme_group`   | `UserGroup`     |
+| Resources | Entity `_type`     | Entity `_class` |
+| --------- | ------------------ | --------------- |
+| Account   | `mimecast_account` | `Account`       |
+| Domain    | `mimecast_domain`  | `Domain`        |
+| User      | `mimecast_user`    | `User`          |
 
 ### Relationships
 
@@ -108,9 +107,8 @@ The following relationships are created:
 
 | Source Entity `_type` | Relationship `_class` | Target Entity `_type` |
 | --------------------- | --------------------- | --------------------- |
-| `acme_account`        | **HAS**               | `acme_group`          |
-| `acme_account`        | **HAS**               | `acme_user`           |
-| `acme_group`          | **HAS**               | `acme_user`           |
+| `mimecast_account`    | **HAS**               | `mimecast_domain`     |
+| `mimecast_domain`     | **HAS**               | `mimecast_user`       |
 
 <!--
 ********************************************************************************

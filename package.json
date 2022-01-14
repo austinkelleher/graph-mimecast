@@ -24,16 +24,24 @@
     "type-check": "tsc",
     "test": "jest",
     "test:env": "LOAD_ENV=1 yarn test",
+    "test:clean": "find src -name __recordings__ -prune -exec rm -rf {} \\;",
     "test:ci": "yarn lint && yarn type-check && yarn test",
     "build": "tsc -p tsconfig.dist.json --declaration && cp README.md dist/README.md && cp -r jupiterone/ dist/jupiterone/",
     "prepush": "yarn lint && yarn type-check && jest --changedSince main"
   },
   "peerDependencies": {
-    "@jupiterone/integration-sdk-core": "^7.4.1"
+    "@jupiterone/integration-sdk-core": "^8.1.3"
   },
   "devDependencies": {
-    "@jupiterone/integration-sdk-core": "^7.4.1",
-    "@jupiterone/integration-sdk-dev-tools": "^7.4.1",
-    "@jupiterone/integration-sdk-testing": "^7.4.1"
+    "@jupiterone/integration-sdk-core": "^8.1.3",
+    "@jupiterone/integration-sdk-dev-tools": "^8.1.3",
+    "@jupiterone/integration-sdk-testing": "^8.1.3",
+    "@types/got": "^9.6.12",
+    "@types/node": "^17.0.8",
+    "@types/uuid": "^8.3.3"
+  },
+  "dependencies": {
+    "got": "^11.8.2",
+    "uuid": "^8.3.2"
   }
 }

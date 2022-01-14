@@ -1,28 +1,31 @@
 # Development
 
-Add details here to give a brief overview of how to work with the provider APIs.
-Please reference any SDKs or API docs used to help build the integration here.
-
-## Prerequisites
-
-Supply details about software or tooling (like maybe Docker or Terraform) that
-is needed for development here.
-
-Please supply references to documentation that details how to install those
-dependencies here.
-
-Tools like Node.js and NPM are already covered in the [README](../README.md) so
-don't bother documenting that here.
+This integration focuses on Mimecast and is using the Mimecast API for
+interacting with resources.
 
 ## Provider account setup
 
-Please provide information about the steps needed to create an account with a
-provider. Images and references to a provider's documentation is very helpful
-for new developers picking up your work.
+It is assumed you have admin access to your mimecast account. In the mimecast
+admin console:
+
+- go to Administration -> Services -> API and Platform Integrations
+- go to the `Your Application Integrations` category
+- click on `Add API Application` or click on an existing enabled Application in
+  this section
+- here you will be able to view the `Application ID` and `Application Key`,
+  which you will need for authentication.
+- If you have not already generated keys, do so now by clicking the
+  `Create Keys` option
+- Save the contents of the `accessKey` and `secretKey` generated. They will be
+  needed for authentication
 
 ## Authentication
 
-Supply details here for information on how to authenticate with a provider so
-that developers have an idea of what's needed to hit APIs. It may be useful to
-provide explanations for each value specified in the
-[`IntegrationInstanceConfigFieldMap`](../src/config.ts).
+Copy the `.env.example` to `.env` file and fill in the variables using the user
+information and API token information generated from instructions above. The
+mapping is as follows:
+
+- CLIENT_ID= ${`accessKey`}
+- CLIENT_SECRET= ${`secretKey`}
+- APP_KEY= ${`Application Key`}
+- APP_ID= ${`Application ID`}
