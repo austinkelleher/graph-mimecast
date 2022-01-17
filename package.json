@@ -1,7 +1,7 @@
 {
-  "name": "@jupiterone/integration-template",
-  "version": "0.0.0",
-  "description": "A JupiterOne Integration",
+  "name": "@jupiterone/graph-mimecast",
+  "version": "1.0.0",
+  "description": "A JupiterOne Integration for ingesting data from Mimecast",
   "license": "MPL-2.0",
   "main": "src/index.js",
   "types": "src/index.d.ts",
