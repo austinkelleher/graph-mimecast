@@ -1,7 +1,4 @@
-import {
-  RelationshipClass,
-  RelationshipDirection,
-} from '@jupiterone/integration-sdk-core';
+import { RelationshipClass } from '@jupiterone/integration-sdk-core';
 import {
   createMockStepExecutionContext,
   Recording,

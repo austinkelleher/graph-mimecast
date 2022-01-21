@@ -289,7 +289,7 @@ export class APIClient {
       });
     }
     this.verifyResponse(response, endpoint);
-    let users = [];
+    let users: User[] = [];
     if (response.data.length) {
       users = response.data[0].users;
     }
@@ -364,7 +364,7 @@ export class APIClient {
       });
     }
     this.verifyResponse(response, endpoint);
-    let users = [];
+    let users: AwarenessCampaignUserData[] = [];
     if (response.data.length) {
       users = response.data[0].items;
     }
