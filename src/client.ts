@@ -30,8 +30,7 @@ const gotRetryOptions: Partial<RequiredRetryOptions> = {
   methods: ['POST'],
 };
 
-// small page size if test so we can validate pagination
-const PAGE_SIZE = process.env.LOAD_ENV ? 2 : 100;
+const PAGE_SIZE = 100;
 
 const statusTextMap = {
   400: 'Bad Request',

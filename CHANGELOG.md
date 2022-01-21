@@ -13,5 +13,17 @@ and this project adheres to
 - pagination support for user and awareness training participant ingestion
 - more docs
 - missing test
+- ingest awareness training campaigns and participants, add relationships
 
-[1.0.1] - 2022-01-18 [1.0.0] - 2022-01-17
+[1.0.1] - 2022-01-18
+
+### Changed
+
+- version to fix tagging issue
+
+[1.0.0] - 2022-01-17
+
+### Added
+
+- initial mimecast integration
+- ingests account info, domains, users, and establishes relationships
