@@ -2,22 +2,18 @@
 
 ## Mimecast + JupiterOne Integration Benefits
 
-- Visualize Mimecast account, users, domains, awareness training campaigns, and
-  phishing campaigns, along with their relationships.
+- Visualize Mimecast account, users, domains, and awareness training campaigns,
+  along with their relationships.
 - Map domains to account owning them
 - Map users to domains
 - Map awarenss training campaigns to enrolled users, and owning account
-- Map phishing campaigns to enrolled users, and owning account
 - Monitor campaign status, or a specific user's participate across multiple
   campaigns using your JupiterOne account
 
 ## How it Works
 
-TODO: Iterate significant activities the integration enables. Consider the
-following examples:
-
-- JupiterOne periodically fetches services, teams, and users from Mimecast to
-  update the graph.
+- JupiterOne periodically fetches account, domains, users, awareness training
+  campaigns, and their participants from Mimecast to update the graph.
 - Write JupiterOne queries to review and monitor updates to the graph, or
   leverage existing queries.
 - Configure alerts to take action when JupiterOne graph changes, or leverage

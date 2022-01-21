@@ -30,6 +30,9 @@ const gotRetryOptions: Partial<RequiredRetryOptions> = {
   methods: ['POST'],
 };
 
+// small page size if test so we can validate pagination
+const PAGE_SIZE = process.env.LOAD_ENV ? 2 : 100;
+
 const statusTextMap = {
   400: 'Bad Request',
   401: 'Unauthorized',
@@ -40,6 +43,16 @@ const statusTextMap = {
   502: 'Bad Gateway',
   503: 'Service Unavailable',
   504: 'Gateway Timeout',
+};
+
+type getUserBatchResponse = {
+  users: User[];
+  nextBatchId?: string;
+};
+
+type getAwarenessCampaignUserDataBatchResponse = {
+  users: AwarenessCampaignUserData[];
+  nextBatchId?: string;
 };
 
 /**
@@ -235,13 +248,25 @@ export class APIClient {
     return response.data;
   }
 
-  // TODO: pagination support
-  public async getUsers(domain: string): Promise<User[]> {
+  /**
+   * @param {string} domain - domain whose users we wish to fetch
+   * @param {string | undefined} batchId - if supplied, will supply in pagination request options
+   */
+  public async getUserBatch(
+    domain: string,
+    batchId?: string,
+  ): Promise<getUserBatchResponse> {
     const uri = '/api/user/get-internal-users';
     const endpoint = BASE_URI + uri;
     const request = got.post(endpoint, {
       headers: this.generateHeaders(uri),
       body: JSON.stringify({
+        meta: {
+          pagination: {
+            pageSize: PAGE_SIZE,
+            pageToken: batchId,
+          },
+        },
         data: [
           {
             domain,
@@ -264,10 +289,14 @@ export class APIClient {
       });
     }
     this.verifyResponse(response, endpoint);
-    if (!response.data.length) {
-      return [];
+    let users = [];
+    if (response.data.length) {
+      users = response.data[0].users;
     }
-    return response.data[0].users;
+    return {
+      users,
+      nextBatchId: response.meta.pagination?.next,
+    };
   }
 
   public async getAwarenessCampaigns(): Promise<AwarenessCampaign[]> {
@@ -298,15 +327,25 @@ export class APIClient {
     return response.data[0].campaigns;
   }
 
-  // TODO: pagination support
-  public async getAwarenessCampaignUserData(
+  /**
+   * @param {string} campaignId - id of campaign whose participants we wish to fetch
+   * @param {string | undefined} batchId - if supplied, will supply in pagination request options
+   */
+  public async getAwarenessCampaignUserDataBatch(
     campaignId: string,
-  ): Promise<AwarenessCampaignUserData[]> {
+    batchId?: string,
+  ): Promise<getAwarenessCampaignUserDataBatchResponse> {
     const uri = '/api/awareness-training/campaign/get-user-data';
     const endpoint = BASE_URI + uri;
     const request = got.post(endpoint, {
       headers: this.generateHeaders(uri),
       body: JSON.stringify({
+        meta: {
+          pagination: {
+            pageSize: PAGE_SIZE,
+            pageToken: batchId,
+          },
+        },
         data: [{ id: campaignId }],
       }),
       retry: gotRetryOptions,
@@ -325,10 +364,14 @@ export class APIClient {
       });
     }
     this.verifyResponse(response, endpoint);
-    if (!response.data.length) {
-      return [];
+    let users = [];
+    if (response.data.length) {
+      users = response.data[0].items;
     }
-    return response.data[0].items;
+    return {
+      users,
+      nextBatchId: response.meta.pagination?.next,
+    };
   }
 }
 

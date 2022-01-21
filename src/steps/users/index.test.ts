@@ -1,4 +1,8 @@
 import {
+  RelationshipClass,
+  RelationshipDirection,
+} from '@jupiterone/integration-sdk-core';
+import {
   createMockStepExecutionContext,
   Recording,
 } from '@jupiterone/integration-sdk-testing';
@@ -6,7 +10,7 @@ import { fetchUsers } from '.';
 import { integrationConfig } from '../../../test/config';
 import { setupMimecastRecording } from '../../../test/recording';
 import { fetchAccountDetails } from '../account';
-import { Entities } from '../constants';
+import { Entities, Relationships } from '../constants';
 import { fetchDomains } from '../domains';
 
 describe('#fetchUsers', () => {
@@ -58,6 +62,34 @@ describe('#fetchUsers', () => {
           },
         },
         required: [],
+      },
+    });
+  });
+
+  test('should establish domain has user relationships', async () => {
+    recording = setupMimecastRecording({
+      directory: __dirname,
+      name: 'fetchUsersShouldBuildDomainRelationships',
+    });
+
+    const context = createMockStepExecutionContext({
+      instanceConfig: integrationConfig,
+    });
+    await fetchAccountDetails(context);
+    await fetchDomains(context);
+    await fetchUsers(context);
+
+    expect(context.jobState.collectedRelationships?.length).toBeTruthy;
+    expect(
+      context.jobState.collectedRelationships.filter(
+        (r) => r._type === Relationships.DOMAIN_HAS_USER._type,
+      ),
+    ).toMatchDirectRelationshipSchema({
+      schema: {
+        properties: {
+          _class: { const: RelationshipClass.HAS },
+          _type: { const: Relationships.DOMAIN_HAS_USER._type },
+        },
       },
     });
   });

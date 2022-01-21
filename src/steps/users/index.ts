@@ -19,18 +19,26 @@ export async function fetchUsers({
   await jobState.iterateEntities(
     { _type: Entities.DOMAIN._type },
     async (domain) => {
-      const users = await apiClient.getUsers(domain.displayName as string);
-      for (const user of users) {
-        const userEntity = createUserEntity(user);
-        await jobState.addEntity(userEntity);
-        await jobState.addRelationship(
-          createDirectRelationship({
-            _class: RelationshipClass.HAS,
-            from: domain,
-            to: userEntity,
-          }),
+      let nextBatchId;
+      do {
+        const getUserBatchResponse = await apiClient.getUserBatch(
+          domain.displayName as string,
+          nextBatchId,
         );
-      }
+        const users = getUserBatchResponse.users;
+        nextBatchId = getUserBatchResponse.nextBatchId;
+        for (const user of users) {
+          const userEntity = createUserEntity(user);
+          await jobState.addEntity(userEntity);
+          await jobState.addRelationship(
+            createDirectRelationship({
+              _class: RelationshipClass.HAS,
+              from: domain,
+              to: userEntity,
+            }),
+          );
+        }
+      } while (nextBatchId);
     },
   );
 }
