@@ -16,8 +16,8 @@
 TODO: Iterate significant activities the integration enables. Consider the
 following examples:
 
-- JupiterOne periodically fetches services, teams, and users from {{provider}}
-  to update the graph.
+- JupiterOne periodically fetches services, teams, and users from Mimecast to
+  update the graph.
 - Write JupiterOne queries to review and monitor updates to the graph, or
   leverage existing queries.
 - Configure alerts to take action when JupiterOne graph changes, or leverage
@@ -25,14 +25,8 @@ following examples:
 
 ## Requirements
 
-TODO: Iterate requirements for setting up the integration. Consider the
-following examples:
-
-- {{provider}} supports the OAuth2 Client Credential flow. You must have a
-  Administrator user account.
-- JupiterOne requires a REST API key. You need permission to create a user in
-  {{provider}} that will be used to obtain the API key.
-- You must have permission in JupiterOne to install new integrations.
+You must have **admin access** to your Mimecast account, as you will need to
+create an Application Integration.
 
 ## Support
 
@@ -41,42 +35,43 @@ If you need help with this integration, please contact
 
 ## Integration Walkthrough
 
-### In {{provider}}
+### In Mimecast
 
-TODO: List specific actions that must be taken in the provider. Remove this
-section when there are no actions to take in the provider.
+In the Mimecast admin console:
 
-1. [Generate a REST API key](https://example.com/docs/generating-api-keys)
+- go to Administration -> Services -> API and Platform Integrations
+- go to the `Your Application Integrations` category
+- click on `Add API Application` or click on an existing enabled Application in
+  this section
+- here you will be able to view the `Application ID` and `Application Key`,
+  which you will need for authentication.
+- If you have not already generated keys, do so now by clicking the
+  `Create Keys` option
+- Save the contents of the `accessKey` and `secretKey` generated. They will be
+  needed for authentication
 
 ### In JupiterOne
 
-TODO: List specific actions that must be taken in JupiterOne. Many of the
-following steps will be reusable; take care to be sure they remain accurate.
-
 1. From the configuration **Gear Icon**, select **Integrations**.
-2. Scroll to the **{{provider}}** integration tile and click it.
+2. Scroll to the **Mimecast** integration tile and click it.
 3. Click the **Add Configuration** button and configure the following settings:
 
-- Enter the **Account Name** by which you'd like to identify this {{provider}}
+- Enter the **Account Name** by which you'd like to identify this Mimecast
   account in JupiterOne. Ingested entities will have this value stored in
-  `tag.AccountName` when **Tag with Account Name** is checked.
+  `tag.AccountName` when **Tag with Account Name** is checked
 - Enter a **Description** that will further assist your team when identifying
   the integration instance.
 - Select a **Polling Interval** that you feel is sufficient for your monitoring
   needs. You may leave this as `DISABLED` and manually execute the integration.
-- {{additional provider-specific settings}} Enter the **{{provider}} API Key**
-  generated for use by JupiterOne.
+- Enter the **Application ID**, **Application Key**, **accessKey**, and
+  **secretKey** generated for use by JupiterOne.
 
 4. Click **Create Configuration** once all values are provided.
 
 # How to Uninstall
 
-TODO: List specific actions that must be taken to uninstall the integration.
-Many of the following steps will be reusable; take care to be sure they remain
-accurate.
-
 1. From the configuration **Gear Icon**, select **Integrations**.
-2. Scroll to the **{{provider}}** integration tile and click it.
+2. Scroll to the **Mimecast** integration tile and click it.
 3. Identify and click the **integration to delete**.
 4. Click the **trash can** icon.
 5. Click the **Remove** button to delete the integration.

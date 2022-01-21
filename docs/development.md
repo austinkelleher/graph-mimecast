@@ -3,7 +3,7 @@
 This integration focuses on Mimecast and is using the Mimecast API for
 interacting with resources.
 
-## Provider account setup
+## Mimecast account setup
 
 It is assumed you have admin access to your mimecast account. In the mimecast
 admin console:
