@@ -8,4 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- pagination support for user and awareness training participant ingestion
+- more docs
+- missing test
+
 [1.0.1] - 2022-01-18 [1.0.0] - 2022-01-17
