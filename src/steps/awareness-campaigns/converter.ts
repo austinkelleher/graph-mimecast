@@ -5,7 +5,6 @@ import {
 import { AwarenessCampaign } from '../../types';
 import { Entities } from '../constants';
 
-//TODO: finish enumerating searchable info in converter...strip out unnecessary info from source...
 export function createAwarenessCampaignEntity(
   awarenessCampaign: AwarenessCampaign,
 ): Entity {
