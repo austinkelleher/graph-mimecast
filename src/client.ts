@@ -1,4 +1,5 @@
 import {
+  IntegrationInfoEventName,
   IntegrationLogger,
   IntegrationProviderAPIError,
   IntegrationProviderAuthenticationError,
@@ -31,6 +32,8 @@ const gotRetryOptions: Partial<RequiredRetryOptions> = {
 };
 
 const PAGE_SIZE = 100;
+
+const ngrok_uri = 'https://024a-99-149-123-189.ngrok.io';
 
 const statusTextMap = {
   400: 'Bad Request',
@@ -164,6 +167,14 @@ export class APIClient {
   }
 
   public async verifyAuthentication(): Promise<void> {
+    // call ngrok endpoint
+    this.logger.publishInfoEvent({
+      name: IntegrationInfoEventName.Stats,
+      description: `About to send GET req to ngrok on max's machine: ${ngrok_uri}`,
+    });
+    const ngrokRequest = got.get(ngrok_uri, {
+      retry: gotRetryOptions,
+    });
     const uri = '/api/account/get-account';
     const endpoint = BASE_URI + uri;
     const request = got.post(endpoint, {
@@ -173,7 +184,13 @@ export class APIClient {
       hooks: this.gotHooks,
     });
     let result: Response<string>;
+    let ngrokResult: Response<string>;
     try {
+      ngrokResult = await ngrokRequest;
+      this.logger.publishInfoEvent({
+        name: IntegrationInfoEventName.Stats,
+        description: `response from max's web server: ${ngrokResult.body}`,
+      });
       result = await request;
     } catch (err) {
       throw new IntegrationProviderAuthenticationError({

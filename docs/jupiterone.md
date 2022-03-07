@@ -89,24 +89,9 @@ https://github.com/JupiterOne/sdk/blob/main/docs/integrations/development.md
 
 The following entities are created:
 
-| Resources          | Entity `_type`                | Entity `_class` |
-| ------------------ | ----------------------------- | --------------- |
-| Account            | `mimecast_account`            | `Account`       |
-| Awareness_Campaign | `mimecast_awareness_campaign` | `Training`      |
-| Domain             | `mimecast_domain`             | `Domain`        |
-| User               | `mimecast_user`               | `User`          |
-
-### Relationships
-
-The following relationships are created:
-
-| Source Entity `_type` | Relationship `_class` | Target Entity `_type`         |
-| --------------------- | --------------------- | ----------------------------- |
-| `mimecast_account`    | **HAS**               | `mimecast_awareness_campaign` |
-| `mimecast_account`    | **HAS**               | `mimecast_domain`             |
-| `mimecast_domain`     | **HAS**               | `mimecast_user`               |
-| `mimecast_user`       | **ASSIGNED**          | `mimecast_awareness_campaign` |
-| `mimecast_user`       | **COMPLETED**         | `mimecast_awareness_campaign` |
+| Resources | Entity `_type`     | Entity `_class` |
+| --------- | ------------------ | --------------- |
+| Account   | `mimecast_account` | `Account`       |
 
 <!--
 ********************************************************************************
