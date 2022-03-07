@@ -8,12 +8,15 @@ and this project adheres to
 
 ## [Unreleased]
 
+[1.1.1] - 2022-03-07
+
 ### Fixed
 
 - upgraded vulnerable url-parse package, fixed breakage in recordings
 - use latest sdk testing features
 - add in-depth tests for validating invocation
 - correctly parse got non-200 response during api error construction
+- upgrade vulnerable follow-redirects package
 
 [1.1.0] - 2022-01-26
 
