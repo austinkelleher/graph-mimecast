@@ -179,8 +179,8 @@ export class APIClient {
       throw new IntegrationProviderAuthenticationError({
         cause: err,
         endpoint,
-        status: err.status,
-        statusText: err.statusText,
+        status: err.response?.statusCode,
+        statusText: err.response?.statusMessage,
       });
     }
     this.verifyResponse(
@@ -206,8 +206,8 @@ export class APIClient {
       throw new IntegrationProviderAPIError({
         cause: err,
         endpoint,
-        status: err.status,
-        statusText: err.statusText,
+        status: err.response?.statusCode,
+        statusText: err.response?.statusMessage,
       });
     }
     this.verifyResponse(response, endpoint);
@@ -239,8 +239,8 @@ export class APIClient {
       throw new IntegrationProviderAPIError({
         cause: err,
         endpoint: endpoint,
-        status: err.status,
-        statusText: err.statusText,
+        status: err.response?.statusCode,
+        statusText: err.response?.statusMessage,
       });
     }
     this.verifyResponse(response, endpoint);
@@ -283,8 +283,8 @@ export class APIClient {
       throw new IntegrationProviderAPIError({
         cause: err,
         endpoint: endpoint,
-        status: err.status,
-        statusText: err.statusText,
+        status: err.response?.statusCode,
+        statusText: err.response?.statusMessage,
       });
     }
     this.verifyResponse(response, endpoint);
@@ -315,8 +315,8 @@ export class APIClient {
       throw new IntegrationProviderAPIError({
         cause: err,
         endpoint,
-        status: err.status,
-        statusText: err.statusText,
+        status: err.response?.statusCode,
+        statusText: err.response?.statusMessage,
       });
     }
     this.verifyResponse(response, endpoint);
@@ -358,8 +358,8 @@ export class APIClient {
       throw new IntegrationProviderAPIError({
         cause: err,
         endpoint,
-        status: err.status,
-        statusText: err.statusText,
+        status: err.response?.statusCode,
+        statusText: err.response?.statusMessage,
       });
     }
     this.verifyResponse(response, endpoint);

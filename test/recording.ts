@@ -12,7 +12,6 @@ export function setupMimecastRecording(
 ): Recording {
   return setupRecording({
     mutateEntry: mutations.unzipGzippedRecordingEntry,
-    ...input,
     options: {
       matchRequestsBy: {
         url: {
@@ -21,6 +20,8 @@ export function setupMimecastRecording(
       },
       recordFailedRequests: false,
     },
+    ...input,
     redactedRequestHeaders: ['Authorization', 'x-mc-app-id'],
+    redactedResponseHeaders: ['set-cookie'],
   });
 }
