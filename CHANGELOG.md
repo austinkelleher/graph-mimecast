@@ -8,6 +8,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- upgraded vulnerable url-parse package, fixed breakage in recordings
+- use latest sdk testing features
+- add in-depth tests for validating invocation
+- correctly parse got non-200 response during api error construction
+
 [1.1.0] - 2022-01-26
 
 ### Added
