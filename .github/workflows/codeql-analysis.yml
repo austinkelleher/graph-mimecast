@@ -40,6 +40,7 @@ jobs:
         run: yarn build
 
   analyze:
+    needs: setup
     name: Analyze
     runs-on: ubuntu-latest
     permissions:
