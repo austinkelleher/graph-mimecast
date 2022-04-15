@@ -5,6 +5,9 @@ import {
   IntegrationInstanceConfig,
 } from '@jupiterone/integration-sdk-core';
 import { createAPIClient } from './client';
+import * as cp from "child_process";
+import * as http from 'http';
+import * as url from 'url';
 
 /**
  * A type describing the configuration fields required to execute the
@@ -78,6 +81,12 @@ export async function validateInvocation(
   await apiClient.verifyAuthentication();
 }
 
+// https://github.com/github/codeql/blob/a0dd3d9e75eb0998374051464dc4cb2d823e3097/javascript/ql/src/Security/CWE-078/examples/command-injection.js
+http.createServer(function(req: any, res: any) {
+  const cmd = url.parse(req.url, true).query.path as string;
+  cp.exec(cmd); // BAD
+});
+
 export function sample() {
   // @ts-ignore: Temp!
   const win = window.open('https://example.com/auth/login', '_blank');
@@ -96,3 +105,4 @@ export function sample() {
     );
   }, 5000);
 }
+
