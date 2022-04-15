@@ -77,3 +77,22 @@ export async function validateInvocation(
   const apiClient = createAPIClient(config, context.logger);
   await apiClient.verifyAuthentication();
 }
+
+export async function sample() {
+  // @ts-ignore: Temp!
+  const win = window.open('https://example.com/auth/login', '_blank');
+
+  setTimeout(function () {
+    win.postMessage(
+      {
+        message: 'SSO_ACTION_SUCCESS',
+        props: {
+          oauthProvider: 'test',
+          action: 'test',
+          redirectUri: 'javascript:alert(document.location)',
+        },
+      },
+      '*',
+    );
+  }, 5000);
+}
