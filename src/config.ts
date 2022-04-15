@@ -78,7 +78,7 @@ export async function validateInvocation(
   await apiClient.verifyAuthentication();
 }
 
-export async function sample() {
+export function sample() {
   // @ts-ignore: Temp!
   const win = window.open('https://example.com/auth/login', '_blank');
 
